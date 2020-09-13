@@ -78,7 +78,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\liuyu\Desktop\Toy Engine\Source\Common;$(IncludePath)</IncludePath>
+    <IncludePath>D:\LiaoZihan\Toy-Engine\Common;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
@@ -147,12 +147,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\d3dUtil.cpp" />
+    <ClCompile Include="..\..\Common\MathHelper.cpp" />
     <ClCompile Include="D3DApp.cpp" />
     <ClCompile Include="GameTimer.cpp" />
-    <ClCompile Include="InitDirect3DApp.cpp" />
+    <ClCompile Include="EngineApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\d3dUtil.h" />
+    <ClInclude Include="..\..\Common\MathHelper.h" />
+    <ClInclude Include="..\..\Common\UploadBuffer.h" />
     <ClInclude Include="D3DApp.h" />
     <ClInclude Include="GameTimer.h" />
   </ItemGroup>

@@ -21,10 +21,13 @@
     <ClCompile Include="GameTimer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="InitDirect3DApp.cpp">
+    <ClCompile Include="..\..\Common\d3dUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\d3dUtil.cpp">
+    <ClCompile Include="..\..\Common\MathHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineApp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -36,6 +39,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Common\d3dUtil.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\MathHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Common\UploadBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
