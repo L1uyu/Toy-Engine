@@ -58,8 +58,9 @@ private:
 	void BuildConstantBuffers();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildBoxGeometry();
+	void BuildGeometry();
 	void BuildPSO();
+
 
 private:
 
@@ -69,7 +70,7 @@ private:
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
 
 	//std::unique_ptr<MeshGeometry> mBoxGeo = nullptr;
-	std::unique_ptr<MeshGeometrySplit> mBoxGeo = nullptr;
+	std::unique_ptr<MeshGeometrySplit> mGeo = nullptr;
 
 
 	ComPtr<ID3DBlob> mvsByteCode = nullptr;
@@ -128,7 +129,7 @@ bool EngineApp::Initialize()
 	BuildConstantBuffers();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	BuildBoxGeometry();
+	BuildGeometry();
 	BuildPSO();
 
 	ThrowIfFailed(mCommandList->Close());
@@ -189,7 +190,7 @@ void EngineApp::Draw(const GameTimer& gt)
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
 
 	// Clear the back buffer and depth buffer.
-	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::LightSteelBlue, 0, nullptr);
+	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Black, 0, nullptr);
 	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	// Specify the buffers we are going to render to.
@@ -200,14 +201,38 @@ void EngineApp::Draw(const GameTimer& gt)
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	mCommandList->IASetVertexBuffers(0, 1, &mBoxGeo->VertexBufferView(MeshGeometrySplit::BUFFER_PART::POS_TEX));
-	mCommandList->IASetVertexBuffers(1, 1, &mBoxGeo->VertexBufferView(MeshGeometrySplit::BUFFER_PART::OTHERS));
-	mCommandList->IASetIndexBuffer(&mBoxGeo->IndexBufferView());
+	mCommandList->IASetVertexBuffers(0, 1, &mGeo->VertexBufferView(MeshGeometrySplit::BUFFER_PART::POS_TEX));
+	mCommandList->IASetVertexBuffers(1, 1, &mGeo->VertexBufferView(MeshGeometrySplit::BUFFER_PART::OTHERS));
+	mCommandList->IASetIndexBuffer(&mGeo->IndexBufferView());
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	mCommandList->SetGraphicsRootDescriptorTable(0, mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 
-	mCommandList->DrawIndexedInstanced(mBoxGeo->DrawArgs["box"].IndexCount, 1, 0, 0, 0);
+	mCommandList->DrawIndexedInstanced(mGeo->DrawArgs["box"].IndexCount, 1, 0, 0, 0);
+
+	/*
+	XMMATRIX view = XMLoadFloat4x4(&mView);
+	XMMATRIX proj = XMLoadFloat4x4(&mProj);
+	XMFLOAT4X4 worldF =
+	{
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		2.0f, 0.0f, 0.0f, 1.0f
+	};
+	XMMATRIX world = XMLoadFloat4x4(&worldF);
+	XMMATRIX worldViewProj = world * view * proj;
+
+	ObjectConstants objConstants;
+	//XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+	XMStoreFloat4x4(&objConstants.WorldViewProj, worldViewProj);
+	mObjectCB->CopyData(0, objConstants);
+	*/
+	
+	mCommandList->DrawIndexedInstanced(mGeo->DrawArgs["pyramid"].IndexCount, 1, mGeo->DrawArgs["pyramid"].StartIndexLocation, 
+		mGeo->DrawArgs["pyramid"].BaseVertexLocation, 0);
+	
+
 
 
 	// Indicate a state transition on the resource usage.
@@ -359,7 +384,7 @@ void EngineApp::BuildShadersAndInputLayout()
 	};
 }
 
-void EngineApp::BuildBoxGeometry()
+void EngineApp::BuildGeometry()
 {
 	/*std::array<Vertex, 8> vertices =
 	{
@@ -436,17 +461,58 @@ void EngineApp::BuildBoxGeometry()
 		4, 3, 7
 	};
 
-	//const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
-	const UINT vPosBufByteSize = (UINT)vPos.size() * sizeof(VPosData);
-	const UINT vColBufByteSize = (UINT)vCol.size() * sizeof(VColorData);
+	std::array<VPosData, 5> vPosPy =
+	{
+		VPosData({XMFLOAT3(2.0f, 1.0f, 0.0f)}),
+		VPosData({XMFLOAT3(1.0f, -1.0f, -1.0f)}),
+		VPosData({XMFLOAT3(1.0f, -1.0f, 1.0f)}),
+		VPosData({XMFLOAT3(3.0f, -1.0f, 1.0f)}),
+		VPosData({XMFLOAT3(3.0f, -1.0f, -1.0f)})
+	};
 
-	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+	std::array<VColorData, 5> vColPy =
+	{
+		VColorData({XMFLOAT4(Colors::Red)}),
+		VColorData({XMFLOAT4(Colors::Green)}),
+		VColorData({XMFLOAT4(Colors::Green)}),
+		VColorData({XMFLOAT4(Colors::Green)}),
+		VColorData({XMFLOAT4(Colors::Green)})
+	};
+
+	std::array< std::uint16_t, 18> indicesPy =
+	{
+		0, 4, 1,
+		2, 0, 1,
+		0, 3, 4,
+		0, 2, 3,
+		1, 4, 2,
+		2, 4, 3
+	};
+
+	std::array<VPosData, 13> vPosMerge;
+	std::array<VColorData, 13> vColMerge;
+	std::array<std::uint16_t, 36 + 18> indicesMerge;
+
+	std::copy(vPos.begin(), vPos.end(), vPosMerge.begin());
+	std::copy(vPosPy.begin(), vPosPy.end(), vPosMerge.begin() + 8);
+	std::copy(vCol.begin(), vCol.end(), vColMerge.begin());
+	std::copy(vColPy.begin(), vColPy.end(), vColMerge.begin() + 8);
+	std::copy(indices.begin(), indices.end(), indicesMerge.begin());
+	std::copy(indicesPy.begin(), indicesPy.end(), indicesMerge.begin() + 36);
+
+
+
+	//const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT vPosBufByteSize = (UINT)vPosMerge.size() * sizeof(VPosData);
+	const UINT vColBufByteSize = (UINT)vColMerge.size() * sizeof(VColorData);
+
+	const UINT ibByteSize = (UINT)indicesMerge.size() * sizeof(std::uint16_t);
 
 	//mBoxGeo = std::make_unique<MeshGeometry>();
 	//mBoxGeo->Name = "boxGeo";
 	
-	mBoxGeo = std::make_unique<MeshGeometrySplit>();
-	mBoxGeo->Name = "boxGeo";
+	mGeo = std::make_unique<MeshGeometrySplit>();
+	mGeo->Name = "Geo";
 
 	/*
 	ThrowIfFailed(D3DCreateBlob(vbByteSize, &mBoxGeo->VertexBufferCPU));
@@ -467,42 +533,47 @@ void EngineApp::BuildBoxGeometry()
 	mBoxGeo->IndexBufferByteSize = ibByteSize;
 	*/
 
-	ThrowIfFailed(D3DCreateBlob(vPosBufByteSize, &mBoxGeo->PosTexBufferCPU));
-	CopyMemory(mBoxGeo->PosTexBufferCPU->GetBufferPointer(), vPos.data(), vPosBufByteSize);
+	ThrowIfFailed(D3DCreateBlob(vPosBufByteSize, &mGeo->PosTexBufferCPU));
+	CopyMemory(mGeo->PosTexBufferCPU->GetBufferPointer(), vPosMerge.data(), vPosBufByteSize);
 	
-	ThrowIfFailed(D3DCreateBlob(vColBufByteSize, &mBoxGeo->OthersBufferCPU));
-	CopyMemory(mBoxGeo->OthersBufferCPU->GetBufferPointer(), vCol.data(), vColBufByteSize);
+	ThrowIfFailed(D3DCreateBlob(vColBufByteSize, &mGeo->OthersBufferCPU));
+	CopyMemory(mGeo->OthersBufferCPU->GetBufferPointer(), vColMerge.data(), vColBufByteSize);
 
-	ThrowIfFailed(D3DCreateBlob(ibByteSize, &mBoxGeo->IndexBufferCPU));
-	CopyMemory(mBoxGeo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &mGeo->IndexBufferCPU));
+	CopyMemory(mGeo->IndexBufferCPU->GetBufferPointer(), indicesMerge.data(), ibByteSize);
 
-	mBoxGeo->PosTexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), vPos.data(), vPosBufByteSize, mBoxGeo->PosTexBufferUploader);
+	mGeo->PosTexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), vPosMerge.data(), vPosBufByteSize, mGeo->PosTexBufferUploader);
 	
-	mBoxGeo->OthersBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), vCol.data(), vColBufByteSize, mBoxGeo->OthersBufferUploader);
+	mGeo->OthersBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), vColMerge.data(), vColBufByteSize, mGeo->OthersBufferUploader);
 
-	mBoxGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-		mCommandList.Get(), indices.data(), ibByteSize, mBoxGeo->IndexBufferUploader);
+	mGeo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indicesMerge.data(), ibByteSize, mGeo->IndexBufferUploader);
 
-	mBoxGeo->PosTexByteStride = sizeof(VPosData);
-	mBoxGeo->PosTexBufferByteSize = vPosBufByteSize;
+	mGeo->PosTexByteStride = sizeof(VPosData);
+	mGeo->PosTexBufferByteSize = vPosBufByteSize;
 
-	mBoxGeo->OthersByteStride = sizeof(VColorData);
-	mBoxGeo->OthersBufferByteSize = vColBufByteSize;
+	mGeo->OthersByteStride = sizeof(VColorData);
+	mGeo->OthersBufferByteSize = vColBufByteSize;
 
-	mBoxGeo->IndexFormat = DXGI_FORMAT_R16_UINT;
-	mBoxGeo->IndexBufferByteSize = ibByteSize;
+	mGeo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	mGeo->IndexBufferByteSize = ibByteSize;
 
 	SubmeshGeometry submesh;
 	submesh.IndexCount = (UINT)indices.size();
 	submesh.StartIndexLocation = 0;
 	submesh.BaseVertexLocation = 0;
 
-	mBoxGeo->DrawArgs["box"] = submesh;
+	mGeo->DrawArgs["box"] = submesh;
+
+	submesh.IndexCount = (UINT)indicesPy.size();
+	submesh.StartIndexLocation = (UINT)indices.size();
+	submesh.BaseVertexLocation = (UINT)vPos.size();
+
+	mGeo->DrawArgs["pyramid"] = submesh;
 
 }
-
 
 void EngineApp::BuildPSO()
 {
@@ -532,3 +603,5 @@ void EngineApp::BuildPSO()
 	psoDesc.DSVFormat = mDepthStencilFormat;
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPSO)));
 }
+
+
