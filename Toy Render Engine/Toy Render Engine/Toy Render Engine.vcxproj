@@ -78,13 +78,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\LiaoZihan\Toy-Engine\Common;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\liuyu\Desktop\Toy Engine\Source\Common;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\..\Release\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Release\Mid\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
   </PropertyGroup>

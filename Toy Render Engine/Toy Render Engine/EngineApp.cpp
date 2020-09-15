@@ -33,6 +33,7 @@ struct VColorData
 struct ObjectConstants
 {
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
+	XMFLOAT4 GameTime = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
 class EngineApp : public D3DApp
@@ -168,10 +169,12 @@ void EngineApp::Update(const GameTimer& gt)
 	XMMATRIX proj = XMLoadFloat4x4(&mProj);
 	XMMATRIX worldViewProj = world * view * proj;
   
+	XMFLOAT4 gameTime = { gt.TotalTime() / 20, gt.TotalTime(), gt.TotalTime(), gt.TotalTime() };
 
 	ObjectConstants objConstants;
 	//XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 	XMStoreFloat4x4(&objConstants.WorldViewProj, worldViewProj);
+	objConstants.GameTime = gameTime;
 	mObjectCB->CopyData(0, objConstants);
 }
 
@@ -380,7 +383,8 @@ void EngineApp::BuildShadersAndInputLayout()
 	mInputLayout =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
