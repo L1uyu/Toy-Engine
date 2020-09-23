@@ -100,7 +100,7 @@ protected:
 
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
-	UINT mCbvSrvDescripterSize = 0;
+	UINT mCbvSrvUavDescriptorSize = 0;
 
 	std::wstring mMainWndCaption = L"Toy Engine Lab";
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;

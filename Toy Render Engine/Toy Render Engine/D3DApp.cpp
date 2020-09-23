@@ -430,7 +430,7 @@ bool D3DApp::InitDirect3D()
 	mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
 		D3D12_DESCRIPTOR_HEAP_TYPE_DSV
 	);
-	mCbvSrvDescripterSize = md3dDevice->GetDescriptorHandleIncrementSize(
+	mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(
 		D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
 	);
 

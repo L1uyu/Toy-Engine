@@ -108,7 +108,7 @@ ComPtr<ID3DBlob> d3dUtil::CompileShader(
 	if(errors != nullptr)
 		OutputDebugStringA((char*)errors->GetBufferPointer());
 
-	ThrowIfFailed(hr);
+	ThrowIfFailedShader(hr);
 
 	return byteCode;
 }
