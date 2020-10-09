@@ -80,7 +80,8 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)..\..\Temp\Mid\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
+    <LibraryPath>D:\LiaoZihan\Temp\DX12App_x64_Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -130,6 +131,13 @@
     <PostBuildEvent>
       <Command>xcopy "$(ProjectDir)Shaders\" "$(OutDir)Shaders\" /y</Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ShaderModel>5.1</ShaderModel>
+      <ObjectFileOutput>$(OutDir)Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <PreBuildEvent>
+      <Command>if exist $(OutDir)Shaders ( ) else ( mkdir "$(OutDir)Shaders" )</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -153,6 +161,13 @@ del "$(OutDir)$(ProjectName).iobj"
 del "$(OutDir)$(ProjectName).ipdb"
 del "$(OutDir)$(ProjectName).pdb"</Command>
     </PostBuildEvent>
+    <FxCompile>
+      <ShaderModel>5.1</ShaderModel>
+      <ObjectFileOutput>$(OutDir)Shaders\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <PreBuildEvent>
+      <Command>if exist $(OutDir)Shaders ( ) else ( md "$(OutDir)Shaders" )</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Common\d3dUtil.cpp" />
@@ -160,8 +175,8 @@ del "$(OutDir)$(ProjectName).pdb"</Command>
     <ClCompile Include="..\..\Common\MathHelper.cpp" />
     <ClCompile Include="D3DApp.cpp" />
     <ClCompile Include="FrameResource.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="EngineApp.cpp" />
+    <ClCompile Include="GameTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Common\d3dUtil.h" />

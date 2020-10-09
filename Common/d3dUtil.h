@@ -212,89 +212,6 @@ struct MeshGeometry
 	}
 };
 
-
-
-
-struct MeshGeometrySplit
-{
-	// Give it a name so we can look it up by name.
-	std::string Name;
-
-	// System memory copies.  Use Blobs because the vertex/index format can be generic.
-	// It is up to the client to cast appropriately.  
-	Microsoft::WRL::ComPtr<ID3DBlob> PosTexBufferCPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3DBlob> OthersBufferCPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> PosTexBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> OthersBufferGPU = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> PosTexBufferUploader = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> OthersBufferUploader = nullptr;
-	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
-
-	// Data about the buffers.
-	UINT PosTexByteStride = 0;
-	UINT OthersByteStride = 0;
-
-	UINT PosTexBufferByteSize = 0;
-	UINT OthersBufferByteSize = 0;
-
-	DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;
-	UINT IndexBufferByteSize = 0;
-
-	// A MeshGeometry may store multiple geometries in one vertex/index buffer.
-	// Use this container to define the Submesh geometries so we can draw
-	// the Submeshes individually.
-	std::unordered_map<std::string, SubmeshGeometry> DrawArgs;
-
-	enum BUFFER_PART
-	{
-		POS_TEX,
-		OTHERS
-	};
-
-	D3D12_VERTEX_BUFFER_VIEW VertexBufferView(BUFFER_PART b)const
-	{
-		D3D12_VERTEX_BUFFER_VIEW vbv;
-		if (b == BUFFER_PART::POS_TEX)
-		{
-			vbv.BufferLocation = PosTexBufferGPU->GetGPUVirtualAddress();
-			vbv.StrideInBytes = PosTexByteStride;
-			vbv.SizeInBytes = PosTexBufferByteSize;
-		}
-		else
-		{
-			vbv.BufferLocation = OthersBufferGPU->GetGPUVirtualAddress();
-			vbv.StrideInBytes = OthersByteStride;
-			vbv.SizeInBytes = OthersBufferByteSize;
-		}
-
-		return vbv;
-	}
-
-	D3D12_INDEX_BUFFER_VIEW IndexBufferView()const
-	{
-		D3D12_INDEX_BUFFER_VIEW ibv;
-		ibv.BufferLocation = IndexBufferGPU->GetGPUVirtualAddress();
-		ibv.Format = IndexFormat;
-		ibv.SizeInBytes = IndexBufferByteSize;
-
-		return ibv;
-	}
-
-	// We can free this memory after we finish upload to the GPU.
-	void DisposeUploaders()
-	{
-		PosTexBufferUploader = nullptr;
-		OthersBufferUploader = nullptr;
-		IndexBufferUploader = nullptr;
-	}
-};
-
-
-
 struct Light
 {
     DirectX::XMFLOAT3 Strength = { 0.5f, 0.5f, 0.5f };
@@ -374,6 +291,7 @@ struct Texture
     if(FAILED(hr__)) { throw DxException(hr__, L"Shader Compiler", wfn, __LINE__); } \
 }
 #endif
+
 
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if(x){ x->Release(); x = 0; } }

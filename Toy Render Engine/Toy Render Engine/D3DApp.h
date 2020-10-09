@@ -37,6 +37,7 @@ protected:
 	virtual void OnMouseDown(WPARAM btnStage, int x, int y) {}
 	virtual void OnMouseUp(WPARAM btnStage, int x, int y) {}
 	virtual void OnMouseMove(WPARAM btnStage, int x, int y) {}
+	virtual void OnMouseWheel(WPARAM btnState, int x, int y) {}
 
 protected:
 	bool InitMainWindow();

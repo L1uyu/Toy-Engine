@@ -1,6 +1,9 @@
 #include "D3DApp.h"
 #include "GeometryGenerator.h"
 #include "FrameResource.h"
+#include "iostream"
+
+
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -54,6 +57,7 @@ private:
 	virtual void OnMouseDown(WPARAM btnState, int x, int y)override;
 	virtual void OnMouseUp(WPARAM btnState, int x, int y)override;
 	virtual void OnMouseMove(WPARAM btnStage, int x, int y)override;
+	virtual void OnMouseWheel(WPARAM btnState, int x, int y)override;
 
 	void OnKeyboardInput(const GameTimer& gt);
 	void UpdateCamera(const GameTimer& gt);
@@ -101,14 +105,19 @@ private:
 
 
 	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
+	XMVECTOR mTarget = { 0.0f, 0.0f, 0.0f , 1.0f};
+
 	XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	XMFLOAT4X4 mProj = MathHelper::Identity4x4();
 
 	float mTheta = 1.5f * XM_PI;
 	float mPhi = XM_PIDIV4;
 	float mRadius = 15.0f;
+	
 
 	POINT mLastMousePos;
+
+
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -157,6 +166,7 @@ bool EngineApp::Initialize()
 	ThrowIfFailed(mCommandList->Close());
 	ID3D12CommandList* cmdLists[] = { mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(_countof(cmdLists), cmdLists);
+
 
 	FlushCommandQueue();
 
@@ -271,34 +281,95 @@ void EngineApp::OnMouseUp(WPARAM btnState, int x, int y)
 
 void EngineApp::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	if ((btnState & MK_LBUTTON) != 0)
+	if ((btnState & MK_LBUTTON) != 0) //我将这里 &&0 是因为出现了一点问题，暂时屏蔽掉
 	{
-		//坐标移动一个像素旋转 1/4 度
-		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+		int speed;
+		bool fResult = SystemParametersInfo(SPI_GETMOUSESPEED,   // Get mouse information
+			0,              // Not used
+			&speed,    // Holds mouse information
+			0);             // Not used
 
-		mTheta -= dx;
-		mPhi -= dy;
+		XMVECTOR eyePos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
+		XMVECTOR eyeDir = mTarget - eyePos;
 
-		mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
+		XMVECTOR rightDir = XMVector3Normalize(XMVector3Cross(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), eyeDir));
+		XMVECTOR upDir = XMVector3Normalize(XMVector3Cross(eyeDir, rightDir));
+
+		float dx = 0.01f * static_cast<float>(speed * (x - mLastMousePos.x));
+		float dy = 0.01f * static_cast<float>(speed * (y - mLastMousePos.y));
+
+		XMVECTOR Dir = (-dx) * rightDir + dy * upDir;
+		
+		//eyePos = eyePos + Dir;
+		//XMStoreFloat3(&mEyePos, eyePos);
+		//mDeltaTargetDir += Dir;
+		//mTheta = atanf(mEyePos.z / mEyePos.x);
+		//mPhi = atanf(mEyePos.z / mEyePos.y / sinf(mTheta));
+		//mRadius = mEyePos.y / cosf(mPhi);
+
+		mTarget = mTarget + Dir;
+		
 	}
 	else if ((btnState & MK_RBUTTON) != 0)
 	{
-		int speed = 2;
+		/*
+		int speed;
+		bool fResult = SystemParametersInfo(SPI_GETMOUSESPEED,   // Get mouse information
+			0,              // Not used
+			&speed,    // Holds mouse information
+			0);             // Not used   
+
 		// Make each pixel correspond to 0.005 unit in the scene.
 		float dx = 0.005f * static_cast<float>(x - mLastMousePos.x);
 		float dy = 0.005f * static_cast<float>(y - mLastMousePos.y);
 
 		// Update the camera radius based on input.
-		mRadius += (dx - dy) * 2;
+		mRadius += (dx - dy) * speed;
 
 		// Restrict the radius.
 		mRadius = MathHelper::Clamp(mRadius, 3.0f, 50.0f);
+		*/
+
+		//坐标移动一个像素旋转 1/4 度
+		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+
+		
+	
+		mPhi -= dy;
+		mTheta -= dx;
+
+
+		mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
+
 	}
+	
 
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 }
+
+void EngineApp::OnMouseWheel(WPARAM btnState, int x, int y)
+{
+	short wheelDir = (short)HIWORD(btnState) / 120; //获得滚轮滚动的方向
+
+	int pulScrollLines;
+	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &pulScrollLines, 0);
+
+	mRadius -= wheelDir * pulScrollLines;
+
+	mRadius = MathHelper::Clamp(mRadius, 0.1f, 50.0f);
+
+
+
+	//XMVECTOR pos = XMLoadFloat3(&mEyePos);
+	//XMVECTOR dir = mTarget - pos;
+	//pos = pos + static_cast<float>(wheelDir * pulScrollLines) * XMVector3Normalize(dir);
+	//mTarget = mTarget + static_cast<float>(wheelDir * pulScrollLines) * XMVector3Normalize(dir);
+	//XMStoreFloat3(&mEyePos, pos);
+}
+
+
 
 void EngineApp::OnKeyboardInput(const GameTimer& gt)
 {
@@ -307,14 +378,22 @@ void EngineApp::OnKeyboardInput(const GameTimer& gt)
 
 void EngineApp::UpdateCamera(const GameTimer& gt)
 {
-	// Convert Spherical to Cartesian coordinates.
-	mEyePos.x = mRadius * sinf(mPhi) * cosf(mTheta);
-	mEyePos.z = mRadius * sinf(mPhi) * sinf(mTheta);
-	mEyePos.y = mRadius * cosf(mPhi);
+	
+	XMFLOAT3 eyePos;
+	eyePos.x = mRadius * sinf(mPhi) * cosf(mTheta);
+	eyePos.z = mRadius * sinf(mPhi) * sinf(mTheta);
+	eyePos.y = mRadius * cosf(mPhi);
+
+	XMFLOAT3 DeltaDir;
+	XMStoreFloat3(&DeltaDir, mTarget);
+
+	mEyePos.x = eyePos.x + DeltaDir.x;
+	mEyePos.y = eyePos.y + DeltaDir.y;
+	mEyePos.z = eyePos.z + DeltaDir.z;
 
 	// Build the view matrix.
 	XMVECTOR pos = XMVectorSet(mEyePos.x, mEyePos.y, mEyePos.z, 1.0f);
-	XMVECTOR target = XMVectorZero();
+	XMVECTOR target = mTarget;
 	XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 	XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
