@@ -129,11 +129,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(ProjectDir)Shaders\" "$(OutDir)Shaders\" /y</Command>
+      <Command>xcopy "$(ProjectDir)Shaders\*.cso" "$(OutDir)Shaders\" /y</Command>
     </PostBuildEvent>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
-      <ObjectFileOutput>$(OutDir)Shaders\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <PreBuildEvent>
       <Command>if exist $(OutDir)Shaders ( ) else ( mkdir "$(OutDir)Shaders" )</Command>
@@ -163,7 +163,7 @@ del "$(OutDir)$(ProjectName).pdb"</Command>
     </PostBuildEvent>
     <FxCompile>
       <ShaderModel>5.1</ShaderModel>
-      <ObjectFileOutput>$(OutDir)Shaders\%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput>Shaders\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <PreBuildEvent>
       <Command>if exist $(OutDir)Shaders ( ) else ( md "$(OutDir)Shaders" )</Command>
@@ -186,6 +186,23 @@ del "$(OutDir)$(ProjectName).pdb"</Command>
     <ClInclude Include="D3DApp.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="GameTimer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\StandardPixel.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\StandardVertex.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\StandardUtils.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
