@@ -56,10 +56,10 @@ void D3DApp::Set4xMsaaState(bool value)
 {
 	if (m4xMsaaState != value)
 	{
-		m4xMsaaState = value;
+		//m4xMsaaState = value;
 
-		CreateSwapChain();
-		OnResize();
+		//CreateSwapChain();
+		//OnResize();
 	}
 }
 

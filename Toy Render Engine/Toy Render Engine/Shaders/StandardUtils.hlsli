@@ -2,6 +2,7 @@
 #define MaxLights 16
 #define PI  3.14159265f
 #define INV_PI  0.31830988f
+#define EPSILON 1e-7f //用于浮点数运算误差
 
 struct VertexIn
 {
@@ -86,7 +87,7 @@ float GGX(float roughness, float NdotH)
 {
 	float alpha2 = roughness * roughness * roughness * roughness;
 	float d = (NdotH * alpha2 - NdotH) * NdotH + 1; // 2 mad
-	return alpha2 / (PI * d * d);
+	return alpha2 / (PI * d * d + EPSILON);
 }
 
 float GGXVisibility(float roughness,float NdotL, float NdotV)
@@ -94,7 +95,7 @@ float GGXVisibility(float roughness,float NdotL, float NdotV)
 	float alpha = roughness * roughness;
 	float f0 = NdotL * (NdotV * (1.0 - alpha) + alpha);
 	float f1 = NdotV * (NdotL * (1.0 - alpha) + alpha);
-	return 2.0 / (f0 + f1);
+    return 0.5 / (f0 + f1 + EPSILON);
 }
 
 float3 DisneyDiffuse(float3 diffuseAlbedo,  float roughness, float NdotL, float NdotV, float HdotL)

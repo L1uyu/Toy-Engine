@@ -564,7 +564,7 @@ void EngineApp::BuildMaterials()
 	bricks0->DiffuseSrvHeapIndex = 0;
 	bricks0->DiffuseAlbedo = XMFLOAT4(Colors::ForestGreen);
 	bricks0->FresnelR0 = XMFLOAT3(0.02f, 0.02f, 0.02f);
-	bricks0->Roughness = 0.8f;
+	bricks0->Roughness = 0.1f;
 
 	auto stone0 = std::make_unique<Material>();
 	stone0->Name = "stone0";
@@ -580,7 +580,7 @@ void EngineApp::BuildMaterials()
 	tile0->DiffuseSrvHeapIndex = 2;
 	tile0->DiffuseAlbedo = XMFLOAT4(Colors::LightGray);
 	tile0->FresnelR0 = XMFLOAT3(0.02f, 0.02f, 0.02f);
-	tile0->Roughness = 0.9f;
+	tile0->Roughness = 0.2f;
 
 	auto skullMat = std::make_unique<Material>();
 	skullMat->Name = "skullMat";
@@ -588,7 +588,7 @@ void EngineApp::BuildMaterials()
 	skullMat->DiffuseSrvHeapIndex = 3;
 	skullMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	skullMat->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05);
-	skullMat->Roughness = 0.7f;
+	skullMat->Roughness = 0.8f;
 
 	mMaterials["bricks0"] = std::move(bricks0);
 	mMaterials["stone0"] = std::move(stone0);

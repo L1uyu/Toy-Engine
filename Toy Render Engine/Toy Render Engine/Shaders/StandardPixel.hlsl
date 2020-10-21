@@ -25,9 +25,7 @@ float4 main(VertexOut pin) : SV_TARGET
 		float3 spec = Fresnel(gFresnelR0, HdotL) *
 			GGX(roughness, NdotH) *
 			GGXVisibility(roughness, NdotL, NdotV);
-		//color.xyz += PI * (diffuse + spec) * lightStrength;
-
-		color.xyz += lightStrength * (diffuse + spec) * PI;
+		color.xyz += PI * (diffuse + spec) * lightStrength;
 	}
 
 	color += ambient;
