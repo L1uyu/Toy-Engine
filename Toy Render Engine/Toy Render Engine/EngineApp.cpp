@@ -507,7 +507,7 @@ void EngineApp::BuildDescriptorHeaps()
 	UINT numDescriptors = (objCount + 1) * gNumFrameResources;
 
 	mPassCbvOffset = objCount * gNumFrameResources;
-
+	 
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
 	cbvHeapDesc.NumDescriptors = numDescriptors;
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;

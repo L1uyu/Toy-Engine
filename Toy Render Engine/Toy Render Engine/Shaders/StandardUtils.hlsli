@@ -27,6 +27,16 @@ struct Light
     float SpotPower;    // spot light only
 };
 
+struct AreaLight
+{
+    float3 position;
+    float width;
+    float3 dir;
+    float height;
+    float3 horizontal;
+    float intensity;
+};
+
 struct Material
 {
     float4 DiffuseAlbedo;
