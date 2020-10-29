@@ -32,6 +32,7 @@ struct Material
     float4 DiffuseAlbedo;
     float3 FresnelR0;
     float Shininess;
+    float4 Emission;
 };
 
 cbuffer cbPerObject : register(b0)
@@ -44,6 +45,7 @@ cbuffer cbMaterial : register(b1)
     float4 gDiffuseAlbedo;
     float3 gFresnelR0;
     float  gRoughness;
+    float4 gEmission;
     float4x4 gMatTransform;
 };
 

@@ -92,6 +92,13 @@ namespace DirectX
 		                               _Out_opt_ DDS_ALPHA_MODE* alphaMode = nullptr
 		                               );
 
+    HRESULT CreateLTCResources12(_In_ ID3D12Device* device,
+        _In_ ID3D12GraphicsCommandList* cmdList,
+        float* data,
+        _Out_ Microsoft::WRL::ComPtr<ID3D12Resource>& texture,
+        _Out_ Microsoft::WRL::ComPtr<ID3D12Resource>& textureUploadHeap
+    );
+
     // Standard version with optional auto-gen mipmap support
     HRESULT CreateDDSTextureFromMemory( _In_ ID3D11Device* d3dDevice,
                                         _In_opt_ ID3D11DeviceContext* d3dContext,

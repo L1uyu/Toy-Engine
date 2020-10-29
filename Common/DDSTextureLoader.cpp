@@ -991,6 +991,104 @@ static HRESULT FillInitData12(_In_ size_t width,
 	return (index > 0) ? S_OK : E_FAIL;
 }
 
+static HRESULT FillInitDataLTC(_In_ size_t width,
+    _In_ size_t height,
+    _In_ size_t depth,
+    _In_ size_t mipCount,
+    _In_ size_t arraySize,
+    _In_ DXGI_FORMAT format,
+    _In_ size_t maxsize,
+    _In_ size_t bitSize,
+    _In_reads_bytes_(bitSize) const float* bitData,
+    _Out_ size_t& twidth,
+    _Out_ size_t& theight,
+    _Out_ size_t& tdepth,
+    _Out_ size_t& skipMip,
+    _Out_writes_(mipCount* arraySize) D3D12_SUBRESOURCE_DATA* initData
+)
+{
+    if (!bitData || !initData)
+    {
+        return E_POINTER;
+    }
+
+    skipMip = 0;
+    twidth = 0;
+    theight = 0;
+    tdepth = 0;
+
+    size_t NumBytes = 0;
+    size_t RowBytes = 0;
+    const float* pSrcBits = bitData;
+    const float* pEndBits = bitData + bitSize;
+
+    size_t index = 0;
+    for (size_t j = 0; j < arraySize; j++)
+    {
+        size_t w = width;
+        size_t h = height;
+        size_t d = depth;
+        for (size_t i = 0; i < mipCount; i++)
+        {
+            GetSurfaceInfo(w,
+                h,
+                format,
+                &NumBytes,
+                &RowBytes,
+                nullptr
+            );
+
+            if ((mipCount <= 1) || !maxsize || (w <= maxsize && h <= maxsize && d <= maxsize))
+            {
+                if (!twidth)
+                {
+                    twidth = w;
+                    theight = h;
+                    tdepth = d;
+                }
+
+                assert(index < mipCount* arraySize);
+                _Analysis_assume_(index < mipCount* arraySize);
+                initData[index]./*pSysMem*/pData = (const void*)pSrcBits;
+                initData[index]./*SysMemPitch*/RowPitch = static_cast<UINT>(RowBytes);
+                initData[index]./*SysMemSlicePitch*/SlicePitch = static_cast<UINT>(NumBytes);
+                ++index;
+            }
+            else if (!j)
+            {
+                // Count number of skipped mipmaps (first item only)
+                ++skipMip;
+            }
+
+            if (pSrcBits + (NumBytes * d) > pEndBits)
+            {
+                return HRESULT_FROM_WIN32(ERROR_HANDLE_EOF);
+            }
+
+            pSrcBits += NumBytes * d;
+
+            w = w >> 1;
+            h = h >> 1;
+            d = d >> 1;
+            if (w == 0)
+            {
+                w = 1;
+            }
+            if (h == 0)
+            {
+                h = 1;
+            }
+            if (d == 0)
+            {
+                d = 1;
+            }
+        }
+    }
+
+    return (index > 0) ? S_OK : E_FAIL;
+}
+
+
 //--------------------------------------------------------------------------------------
 static HRESULT CreateD3DResources( _In_ ID3D11Device* d3dDevice,
                                    _In_ uint32_t resDim,
@@ -2364,4 +2462,98 @@ HRESULT DirectX::CreateDDSTextureFromFileEx( ID3D11Device* d3dDevice,
     }
 
     return hr;
+}
+
+
+HRESULT DirectX::CreateLTCResources12(_In_ ID3D12Device* device,
+    _In_ ID3D12GraphicsCommandList* cmdList,
+    float* data,
+    _Out_ Microsoft::WRL::ComPtr<ID3D12Resource>& texture,
+    _Out_ Microsoft::WRL::ComPtr<ID3D12Resource>& textureUploadHeap
+)
+{
+    HRESULT hr = E_FAIL;
+
+    std::unique_ptr<D3D12_SUBRESOURCE_DATA[]> initData(
+        new (std::nothrow) D3D12_SUBRESOURCE_DATA[1 * 4096]
+    );
+
+    if (!initData)
+    {
+        return E_OUTOFMEMORY;
+    }
+
+    size_t skipMip = 0;
+    size_t twidth = 0;
+    size_t theight = 0;
+    size_t tdepth = 0;
+
+    hr = FillInitDataLTC(
+        64, 64, 1, 1, 4096, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 4096 * 4 * sizeof(float), data,
+        twidth, theight, tdepth, skipMip, initData.get()
+    );
+
+    if (SUCCEEDED(hr))
+    {
+        D3D12_RESOURCE_DESC texDesc;
+        ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
+        texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        texDesc.Alignment = 0;
+        texDesc.Width = 64;
+        texDesc.Height = 64;
+        texDesc.DepthOrArraySize = 4096;
+        texDesc.MipLevels = 1;
+        texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        texDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+        hr = device->CreateCommittedResource(
+            &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+            D3D12_HEAP_FLAG_NONE,
+            &texDesc,
+            D3D12_RESOURCE_STATE_COMMON,
+            nullptr,
+            IID_PPV_ARGS(&texture)
+        );
+
+        if (FAILED(hr))
+        {
+            texture = nullptr;
+            return hr;
+        }
+        else
+        {
+            const UINT num2DSubresources = texDesc.DepthOrArraySize * texDesc.MipLevels;
+            const UINT64 uploadBufferSize = GetRequiredIntermediateSize(texture.Get(), 0, num2DSubresources);
+
+            hr = device->CreateCommittedResource(
+                &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+                D3D12_HEAP_FLAG_NONE,
+                &CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize),
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&textureUploadHeap));
+            if (FAILED(hr))
+            {
+                texture = nullptr;
+                return hr;
+            }
+            else
+            {
+                cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(),
+                    D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST));
+
+                // Use Heap-allocating UpdateSubresources implementation for variable number of subresources (which is the case for textures).
+                UpdateSubresources(cmdList, texture.Get(), textureUploadHeap.Get(), 0, 0, num2DSubresources, initData.get());
+
+                cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(),
+                    D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+            }
+        }
+    }
+
+    return hr;
+
 }
