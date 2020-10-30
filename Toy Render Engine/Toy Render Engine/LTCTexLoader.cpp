@@ -10,7 +10,8 @@ HRESULT LTCTexLoader::CreateLTCResources(
 	Microsoft::WRL::ComPtr<ID3D12Resource>& textureUploadHeap
 )
 {
-	float g_ltc_1[] = {
+	
+	float* g_ltc_1 = new float[]{
 1, 0, 0, 2e-05,
 1, 0, 0, 0.000503905,
 1, 0, 0, 0.00201562,
@@ -4108,7 +4109,7 @@ HRESULT LTCTexLoader::CreateLTCResources(
 0.982561, -0.11134, 0.0903457, 1.59982,
 0.996389, -0.0808124, 0.0489007, 1.6577,
 	};
-	float g_ltc_2[] = {
+	float* g_ltc_2 = new float[]{
 	1, 0, 0, 0,
 	1, 7.91421e-31, 0, 0,
 	1, 1.04392e-24, 0, 0,
@@ -8217,7 +8218,7 @@ HRESULT LTCTexLoader::CreateLTCResources(
 	D3D12_RESOURCE_DESC texDesc;
 	//ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
 	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	//texDesc.Alignment = 0;
+	texDesc.Alignment = 0;
 	texDesc.Width = texWidth;
 	texDesc.Height = texHeight;
 	texDesc.DepthOrArraySize = 1;
@@ -8305,6 +8306,9 @@ HRESULT LTCTexLoader::CreateLTCResources(
 	stResBar.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 
 	cmdList->ResourceBarrier(1, &stResBar);
+
+	delete[](g_ltc_1);
+	delete[](g_ltc_2);
 
 	return hr;
 	//	if (FAILED(hr))

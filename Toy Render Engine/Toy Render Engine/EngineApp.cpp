@@ -64,6 +64,8 @@ private:
 	virtual void OnMouseMove(WPARAM btnStage, int x, int y)override;
 	virtual void OnMouseWheel(WPARAM btnState, int x, int y)override;
 
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
+
 	void OnKeyboardInput(const GameTimer& gt);
 	void UpdateCamera(const GameTimer& gt);
 	void UpdateObjectCBs(const GameTimer& gt);
@@ -71,7 +73,7 @@ private:
 	void UpdateMainPassCB(const GameTimer& gt);
 
 	void BuildDescriptorHeaps();
-	void BuildConstantBufferViews();
+	//void BuildConstantBufferViews();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	
@@ -81,6 +83,7 @@ private:
 	void LoadLTCTex();
 	void BuildAreaLight();
 
+	
 	void BuildMaterials();
 	void BuildPSOs();
 	void BuildFrameResource();
@@ -95,7 +98,7 @@ private:
 	int mCurrFrameResourceIndex = 0;
 
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
-	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
+	//ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
 
 	ComPtr<ID3D12DescriptorHeap> mSrvDescriptorHeap = nullptr;
 
@@ -114,8 +117,9 @@ private:
 	std::vector<RenderItem*> mOpaqueRitems;
 
 	PassConstants mMainPassCB;
-	UINT mPassCbvOffset = 0;
+	//UINT mPassCbvOffset = 0;
 
+	UINT mCbvSrvDescriptorSize = 0;
 
 	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
 	XMVECTOR mTarget = { 0.0f, 0.0f, 0.0f , 1.0f};
@@ -166,16 +170,22 @@ bool EngineApp::Initialize()
 	if (!D3DApp::Initialize())
 		return false;
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+	
+	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+	LoadLTCTex();
+	
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildGeometry();
 	BuildSkull();
+	BuildAreaLight();
 	BuildMaterials();
 	BuildRenderItems();
 	BuildFrameResource();
+	
 	BuildDescriptorHeaps();
-	BuildConstantBufferViews();
+	//BuildConstantBufferViews();
 	BuildPSOs();
 
 	ThrowIfFailed(mCommandList->Close());
@@ -244,13 +254,19 @@ void EngineApp::Draw(const GameTimer& gt)
 	// Specify the buffers we are going to render to.
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 
-	//ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
-	//mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvDescriptorHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
+	CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+	mCommandList->SetGraphicsRootDescriptorTable(0, tex);
+	
+	//mCommandList->SetGraphicsRootDescriptorTable(1, tex);
+
 	auto passCB = mCurrFrameResource->PassCB->Resource();
-	mCommandList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+	mCommandList->SetGraphicsRootConstantBufferView(3, passCB->GetGPUVirtualAddress());
 
 	/*
 	int passCbvIndex = mPassCbvOffset + mCurrFrameResourceIndex;
@@ -469,6 +485,9 @@ void EngineApp::UpdateMainPassCB(const GameTimer& gt)
 	mMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
 	mMainPassCB.Lights[2].Strength = { 0.15f, 0.15f, 0.15f };
 
+	mMainPassCB.AreaLight.dir = { 0.0f, 0.0f, -1.0f };
+
+
 	auto currPassCB = mCurrFrameResource->PassCB.get();
 	currPassCB->CopyData(0, mMainPassCB);
 }
@@ -502,7 +521,7 @@ void EngineApp::UpdateMaterialCBs(const GameTimer& gt)
 
 void EngineApp::BuildDescriptorHeaps()
 {
-	UINT objCount = (UINT)mOpaqueRitems.size();
+	/*UINT objCount = (UINT)mOpaqueRitems.size();
 
 	UINT numDescriptors = (objCount + 1) * gNumFrameResources;
 
@@ -514,61 +533,82 @@ void EngineApp::BuildDescriptorHeaps()
 	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	cbvHeapDesc.NodeMask = 0;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
-		IID_PPV_ARGS(&mCbvHeap)));
+		IID_PPV_ARGS(&mCbvHeap)));*/
 
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.NumDescriptors = 2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+	auto LTC_InvMTex = mTextures["LTC_InvMTex"]->Resource;
+	auto LTC_NFTex = mTextures["LTC_NFTex"]->Resource;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = LTC_InvMTex->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = LTC_InvMTex->GetDesc().MipLevels;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	md3dDevice->CreateShaderResourceView(LTC_InvMTex.Get(), &srvDesc, hDescriptor);
+
+	hDescriptor.Offset(1, mCbvSrvDescriptorSize);
+
+	srvDesc.Format = LTC_NFTex->GetDesc().Format;
+	srvDesc.Texture2D.MipLevels = LTC_NFTex->GetDesc().MipLevels;
+	md3dDevice->CreateShaderResourceView(LTC_NFTex.Get(), &srvDesc, hDescriptor);
+
 }
 
-void EngineApp::BuildConstantBufferViews()
-{
-	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
-
-	UINT objCount = (UINT)mOpaqueRitems.size();
-
-	for (int frameIndex = 0; frameIndex < gNumFrameResources; frameIndex++)
-	{
-		auto objectCB = mFrameResources[frameIndex]->ObjectCB->Resource();
-		for (UINT i = 0; i < objCount; i++)
-		{
-			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objectCB->GetGPUVirtualAddress();
-
-			cbAddress += i * objCBByteSize;
-
-			int heapIndex = frameIndex * objCount + i;
-			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
-			handle.Offset(heapIndex, mCbvSrvUavDescriptorSize);
-
-			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-			cbvDesc.BufferLocation = cbAddress;
-			cbvDesc.SizeInBytes = objCBByteSize;
-
-			md3dDevice->CreateConstantBufferView(&cbvDesc, handle);
-		}
-	}
-
-	UINT passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
-
-	for (int frameIndex = 0; frameIndex < gNumFrameResources; ++frameIndex)
-	{
-		auto passCB = mFrameResources[frameIndex]->PassCB->Resource();
-		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
-
-		// Offset to the pass cbv in the descriptor heap.
-		int heapIndex = mPassCbvOffset + frameIndex;
-		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
-		handle.Offset(heapIndex, mCbvSrvUavDescriptorSize);
-
-		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-		cbvDesc.BufferLocation = cbAddress;
-		cbvDesc.SizeInBytes = passCBByteSize;
-
-		md3dDevice->CreateConstantBufferView(&cbvDesc, handle);
-	}
-}
+//void EngineApp::BuildConstantBufferViews()
+//{
+//	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+//
+//	UINT objCount = (UINT)mOpaqueRitems.size();
+//
+//	for (int frameIndex = 0; frameIndex < gNumFrameResources; frameIndex++)
+//	{
+//		auto objectCB = mFrameResources[frameIndex]->ObjectCB->Resource();
+//		for (UINT i = 0; i < objCount; i++)
+//		{
+//			D3D12_GPU_VIRTUAL_ADDRESS cbAddress = objectCB->GetGPUVirtualAddress();
+//
+//			cbAddress += i * objCBByteSize;
+//
+//			int heapIndex = frameIndex * objCount + i;
+//			auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
+//			handle.Offset(heapIndex, mCbvSrvUavDescriptorSize);
+//
+//			D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+//			cbvDesc.BufferLocation = cbAddress;
+//			cbvDesc.SizeInBytes = objCBByteSize;
+//
+//			md3dDevice->CreateConstantBufferView(&cbvDesc, handle);
+//		}
+//	}
+//
+//	UINT passCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(PassConstants));
+//
+//	for (int frameIndex = 0; frameIndex < gNumFrameResources; ++frameIndex)
+//	{
+//		auto passCB = mFrameResources[frameIndex]->PassCB->Resource();
+//		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = passCB->GetGPUVirtualAddress();
+//
+//		// Offset to the pass cbv in the descriptor heap.
+//		int heapIndex = mPassCbvOffset + frameIndex;
+//		auto handle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
+//		handle.Offset(heapIndex, mCbvSrvUavDescriptorSize);
+//
+//		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+//		cbvDesc.BufferLocation = cbAddress;
+//		cbvDesc.SizeInBytes = passCBByteSize;
+//
+//		md3dDevice->CreateConstantBufferView(&cbvDesc, handle);
+//	}
+//}
 
 void EngineApp::BuildMaterials()
 {
@@ -603,7 +643,7 @@ void EngineApp::BuildMaterials()
 	skullMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	skullMat->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
 	skullMat->Roughness = 0.8f;
-	skullMat->Emission = XMFLOAT4(0.0f, 0.3f, 0.0f, 1.0f);
+	skullMat->Emission = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	mMaterials["bricks0"] = std::move(bricks0);
 	mMaterials["stone0"] = std::move(stone0);
@@ -628,16 +668,33 @@ void EngineApp::BuildRootSignature()
 	slotRootParameter[1].InitAsDescriptorTable(1, &cbvTable1);
 	*/
 
+	CD3DX12_DESCRIPTOR_RANGE texTable;
+	texTable.Init(
+		D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+		2,  // number of descriptors
+		0,  // register t0
+		0); 
+
+	//CD3DX12_DESCRIPTOR_RANGE texTable1;
+	//texTable1.Init(
+	//	D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
+	//	1,  // number of descriptors
+	//	1); // register t1
+
 	// Root parameter can be a table, root descriptor or root constants.
-	CD3DX12_ROOT_PARAMETER slotRootParameter[3];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
 
 	// Create root CBV.
-	slotRootParameter[0].InitAsConstantBufferView(0);
-	slotRootParameter[1].InitAsConstantBufferView(1);
-	slotRootParameter[2].InitAsConstantBufferView(2);
+	slotRootParameter[0].InitAsDescriptorTable(1, &texTable, D3D12_SHADER_VISIBILITY_PIXEL);
+	//slotRootParameter[1].InitAsDescriptorTable(1, &texTable1, D3D12_SHADER_VISIBILITY_PIXEL);
+	slotRootParameter[1].InitAsConstantBufferView(0);
+	slotRootParameter[2].InitAsConstantBufferView(1);
+	slotRootParameter[3].InitAsConstantBufferView(2);
+
+	auto staticSamplers = GetStaticSamplers();
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 0, nullptr, 
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter, (UINT)staticSamplers.size(), staticSamplers.data(),
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 
@@ -968,6 +1025,18 @@ void EngineApp::BuildRenderItems()
 		mAllRitems.push_back(std::move(rightSphereRitem));
 	}
 
+	auto areaLightRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&areaLightRitem->World, XMMatrixScaling(4.0f, 4.0f, 4.0f) * XMMatrixTranslation(0.0f, 4.0f, 15.0f));
+	XMStoreFloat4x4(&areaLightRitem->TexTransform, XMMatrixScaling(1.0f, 1.0f, 1.0f));
+	areaLightRitem->ObjCBIndex = objCBIndex;
+	areaLightRitem->Mat = mMaterials["skullMat"].get();
+	areaLightRitem->Geo = mGeometries["areaLightGeo"].get();
+	areaLightRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	areaLightRitem->IndexCount = areaLightRitem->Geo->DrawArgs["areaLight"].IndexCount;
+	areaLightRitem->StartIndexLocation = areaLightRitem->Geo->DrawArgs["areaLight"].StartIndexLocation;
+	areaLightRitem->BaseVertexLocation = areaLightRitem->Geo->DrawArgs["areaLight"].BaseVertexLocation;
+	mAllRitems.push_back(std::move(areaLightRitem));
+
 	// All the render items are opaque.
 	for (auto& e : mAllRitems)
 		mOpaqueRitems.push_back(e.get());
@@ -993,8 +1062,8 @@ void EngineApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::v
 		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + ri->ObjCBIndex * objCBByteSize;
 		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->Mat->MatCBIndex * matCBByteSize;
 
-		cmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
-		cmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(1, objCBAddress);
+		cmdList->SetGraphicsRootConstantBufferView(2, matCBAddress);
 		/*
 		// Offset to the CBV in the descriptor heap for this object and for this frame resource.
 		UINT cbvIndex = mCurrFrameResourceIndex * (UINT)mOpaqueRitems.size() + ri->ObjCBIndex;
@@ -1017,11 +1086,118 @@ void EngineApp::LoadLTCTex()
 	auto LTC_NFTex = std::make_unique<Texture>();
 	LTC_NFTex->Name = "LTC_NFTex";
 	
-	
+	LTCTexLoader::CreateLTCResources(md3dDevice.Get(), mCommandList.Get(), LTCTexLoader::TexToUse::Inv_M, LTC_InvMTex->Resource, LTC_InvMTex->UploadHeap);
+	LTCTexLoader::CreateLTCResources(md3dDevice.Get(), mCommandList.Get(), LTCTexLoader::TexToUse::NF, LTC_NFTex->Resource, LTC_NFTex->UploadHeap);
 
+	mTextures[LTC_InvMTex->Name] = std::move(LTC_InvMTex);
+	mTextures[LTC_NFTex->Name] = std::move(LTC_NFTex);
 }
 
 void EngineApp::BuildAreaLight()
 {
+	AreaLight areaLight = mMainPassCB.AreaLight;
+	DirectX::XMFLOAT3 normal = { 0.0f, 0.0f, -1.0f };
 
+	std::array<Vertex, 4> vertices =
+	{
+		Vertex({ XMFLOAT3(-1.0f, +1.0f, 0.0f), normal }),
+		Vertex({ XMFLOAT3(+1.0f, +1.0f, 0.0f), normal }),
+		Vertex({ XMFLOAT3(-1.0f, -1.0f, 0.0f), normal }),
+		Vertex({ XMFLOAT3(+1.0f, -1.0f, 0.0f), normal }),
+	};
+
+	std::array<std::uint16_t, 6> indices =
+	{
+		0, 1, 2,
+		2, 1, 3
+	};
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "areaLightGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["areaLight"] = submesh;
+
+	mGeometries[geo->Name] = std::move(geo);
+
+}
+
+std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> EngineApp::GetStaticSamplers()
+{
+	// Applications usually only need a handful of samplers.  So just define them all up front
+	// and keep them available as part of the root signature.  
+
+	const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
+		0, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC pointClamp(
+		1, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC linearWrap(
+		2, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC linearClamp(
+		3, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
+		4, // shaderRegister
+		D3D12_FILTER_ANISOTROPIC, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressW
+		0.0f,                             // mipLODBias
+		8);                               // maxAnisotropy
+
+	const CD3DX12_STATIC_SAMPLER_DESC anisotropicClamp(
+		5, // shaderRegister
+		D3D12_FILTER_ANISOTROPIC, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressW
+		0.0f,                              // mipLODBias
+		8);                                // maxAnisotropy
+
+	return {
+		pointWrap, pointClamp,
+		linearWrap, linearClamp,
+		anisotropicWrap, anisotropicClamp };
 }
