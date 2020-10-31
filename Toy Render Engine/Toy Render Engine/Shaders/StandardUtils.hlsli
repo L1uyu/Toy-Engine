@@ -27,15 +27,7 @@ struct Light
     float SpotPower;    // spot light only
 };
 
-struct AreaLight
-{
-    float3 position;
-    float width;
-    float3 dir;
-    float height;
-    float3 horizontal;
-    float intensity;
-};
+
 
 struct Material
 {
@@ -45,7 +37,7 @@ struct Material
     float4 Emission;
 };
 
-Texture2D gLTCTex[2] : register(t0);
+
 
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);
@@ -88,6 +80,7 @@ cbuffer cbPass : register(b2)
 
 
     Light gLights[16];
+ 
 }
 
 
@@ -126,3 +119,4 @@ float3 DisneyDiffuse(float3 diffuseAlbedo,  float roughness, float NdotL, float 
 	float viewScatter = (1 + (F90 - 1) * pow(1 - NdotV, 5));
 	return (diffuseAlbedo * INV_PI * lightScatter * viewScatter);
 }
+

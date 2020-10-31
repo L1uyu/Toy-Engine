@@ -34,8 +34,9 @@ struct PassConstants
     // indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
     // indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
     // are spot lights for a maximum of MaxLights per object.
-    Light Lights[15];
-    AreaLight AreaLight;
+    
+    Light Lights[16];
+    
 };
 
 struct Vertex
