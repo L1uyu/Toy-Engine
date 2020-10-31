@@ -1,8 +1,8 @@
 #include "D3DApp.h"
 #include "GeometryGenerator.h"
 #include "FrameResource.h"
-
-
+#include "AreaLight.h"
+#include "LTCTexLoader.h"
 #include <iostream>
 #include <fstream>
 
@@ -80,8 +80,8 @@ private:
 	void BuildGeometry();
 	void BuildSkull();
 
-	//void LoadLTCTex();
-	//void BuildAreaLight();
+	void LoadLTCTex();
+	void BuildAreaLight();
 
 	
 	void BuildMaterials();
@@ -174,7 +174,8 @@ bool EngineApp::Initialize()
 	mCbvSrvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	
-	
+	LoadLTCTex();
+	BuildAreaLight();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildGeometry();
@@ -259,7 +260,9 @@ void EngineApp::Draw(const GameTimer& gt)
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	
+	CD3DX12_GPU_DESCRIPTOR_HANDLE tex(mSrvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
+	mCommandList->SetGraphicsRootDescriptorTable(0, tex);
 	
 	//mCommandList->SetGraphicsRootDescriptorTable(1, tex);
 
@@ -534,12 +537,12 @@ void EngineApp::BuildDescriptorHeaps()
 		IID_PPV_ARGS(&mCbvHeap)));*/
 
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-	srvHeapDesc.NumDescriptors = 1;
+	srvHeapDesc.NumDescriptors = 2;
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&mSrvDescriptorHeap)));
 
-	/*CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(mSrvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
 	auto LTC_InvMTex = mTextures["LTC_InvMTex"]->Resource;
 	auto LTC_NFTex = mTextures["LTC_NFTex"]->Resource;
@@ -557,7 +560,7 @@ void EngineApp::BuildDescriptorHeaps()
 
 	srvDesc.Format = LTC_NFTex->GetDesc().Format;
 	srvDesc.Texture2D.MipLevels = LTC_NFTex->GetDesc().MipLevels;
-	md3dDevice->CreateShaderResourceView(LTC_NFTex.Get(), &srvDesc, hDescriptor);*/
+	md3dDevice->CreateShaderResourceView(LTC_NFTex.Get(), &srvDesc, hDescriptor);
 
 }
 
@@ -632,7 +635,7 @@ void EngineApp::BuildMaterials()
 	tile0->DiffuseSrvHeapIndex = 2;
 	tile0->DiffuseAlbedo = XMFLOAT4(Colors::LightGray);
 	tile0->FresnelR0 = XMFLOAT3(0.02f, 0.02f, 0.02f);
-	tile0->Roughness = 0.2f;
+	tile0->Roughness = 0.276f;
 
 	auto skullMat = std::make_unique<Material>();
 	skullMat->Name = "skullMat";
@@ -669,7 +672,7 @@ void EngineApp::BuildRootSignature()
 	CD3DX12_DESCRIPTOR_RANGE texTable;
 	texTable.Init(
 		D3D12_DESCRIPTOR_RANGE_TYPE_SRV,
-		1,  // number of descriptors
+		2,  // number of descriptors
 		0,  // register t0
 		0); 
 
@@ -1023,8 +1026,8 @@ void EngineApp::BuildRenderItems()
 		mAllRitems.push_back(std::move(rightSphereRitem));
 	}
 
-	/*auto areaLightRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&areaLightRitem->World, XMMatrixScaling(4.0f, 4.0f, 4.0f) * XMMatrixTranslation(0.0f, 4.0f, 15.0f));
+	auto areaLightRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&areaLightRitem->World, XMMatrixScaling(4.0f, 4.0f, 4.0f) * XMMatrixTranslation(0.0f, 5.0f, 15.0f));
 	XMStoreFloat4x4(&areaLightRitem->TexTransform, XMMatrixScaling(1.0f, 1.0f, 1.0f));
 	areaLightRitem->ObjCBIndex = objCBIndex;
 	areaLightRitem->Mat = mMaterials["skullMat"].get();
@@ -1033,7 +1036,19 @@ void EngineApp::BuildRenderItems()
 	areaLightRitem->IndexCount = areaLightRitem->Geo->DrawArgs["areaLight"].IndexCount;
 	areaLightRitem->StartIndexLocation = areaLightRitem->Geo->DrawArgs["areaLight"].StartIndexLocation;
 	areaLightRitem->BaseVertexLocation = areaLightRitem->Geo->DrawArgs["areaLight"].BaseVertexLocation;
-	mAllRitems.push_back(std::move(areaLightRitem));*/
+	mAllRitems.push_back(std::move(areaLightRitem));
+
+	auto areaLightRitem1 = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&areaLightRitem1->World, XMMatrixScaling(4.0f, 4.0f, 4.0f)  * XMMatrixRotationY(3.1415926) * XMMatrixTranslation(0.0f, 5.0f, -15.0f));
+	XMStoreFloat4x4(&areaLightRitem1->TexTransform, XMMatrixScaling(1.0f, 1.0f, 1.0f));
+	areaLightRitem1->ObjCBIndex = ++objCBIndex;
+	areaLightRitem1->Mat = mMaterials["skullMat"].get();
+	areaLightRitem1->Geo = mGeometries["areaLightGeo"].get();
+	areaLightRitem1->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	areaLightRitem1->IndexCount = areaLightRitem1->Geo->DrawArgs["areaLight"].IndexCount;
+	areaLightRitem1->StartIndexLocation = areaLightRitem1->Geo->DrawArgs["areaLight"].StartIndexLocation;
+	areaLightRitem1->BaseVertexLocation = areaLightRitem1->Geo->DrawArgs["areaLight"].BaseVertexLocation;
+	mAllRitems.push_back(std::move(areaLightRitem1));
 
 	// All the render items are opaque.
 	for (auto& e : mAllRitems)
@@ -1076,72 +1091,72 @@ void EngineApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::v
 }
 
 
-//void EngineApp::LoadLTCTex()
-//{
-//	auto LTC_InvMTex = std::make_unique<Texture>();
-//	LTC_InvMTex->Name = "LTC_InvMTex";
-//
-//	auto LTC_NFTex = std::make_unique<Texture>();
-//	LTC_NFTex->Name = "LTC_NFTex";
-//	
-//	LTCTexLoader::CreateLTCResources(md3dDevice.Get(), mCommandList.Get(), LTCTexLoader::TexToUse::Inv_M, LTC_InvMTex->Resource, LTC_InvMTex->UploadHeap);
-//	LTCTexLoader::CreateLTCResources(md3dDevice.Get(), mCommandList.Get(), LTCTexLoader::TexToUse::NF, LTC_NFTex->Resource, LTC_NFTex->UploadHeap);
-//
-//	mTextures[LTC_InvMTex->Name] = std::move(LTC_InvMTex);
-//	mTextures[LTC_NFTex->Name] = std::move(LTC_NFTex);
-//}
+void EngineApp::LoadLTCTex()
+{
+	auto LTC_InvMTex = std::make_unique<Texture>();
+	LTC_InvMTex->Name = "LTC_InvMTex";
 
-//void EngineApp::BuildAreaLight()
-//{
-//	//AreaLight areaLight = mMainPassCB.AreaLight;
-//	DirectX::XMFLOAT3 normal = { 0.0f, 0.0f, -1.0f };
-//
-//	std::array<Vertex, 4> vertices =
-//	{
-//		Vertex({ XMFLOAT3(-1.0f, +1.0f, 0.0f), normal }),
-//		Vertex({ XMFLOAT3(+1.0f, +1.0f, 0.0f), normal }),
-//		Vertex({ XMFLOAT3(-1.0f, -1.0f, 0.0f), normal }),
-//		Vertex({ XMFLOAT3(+1.0f, -1.0f, 0.0f), normal }),
-//	};
-//
-//	std::array<std::uint16_t, 6> indices =
-//	{
-//		0, 1, 2,
-//		2, 1, 3
-//	};
-//	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
-//	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
-//
-//	auto geo = std::make_unique<MeshGeometry>();
-//	geo->Name = "areaLightGeo";
-//
-//	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
-//	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
-//
-//	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
-//	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
-//
-//	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-//		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
-//
-//	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-//		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
-//
-//	geo->VertexByteStride = sizeof(Vertex);
-//	geo->VertexBufferByteSize = vbByteSize;
-//	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
-//	geo->IndexBufferByteSize = ibByteSize;
-//
-//	SubmeshGeometry submesh;
-//	submesh.IndexCount = (UINT)indices.size();
-//	submesh.StartIndexLocation = 0;
-//	submesh.BaseVertexLocation = 0;
-//
-//	geo->DrawArgs["areaLight"] = submesh;
-//
-//	mGeometries[geo->Name] = std::move(geo);
-//
-//}
+	auto LTC_NFTex = std::make_unique<Texture>();
+	LTC_NFTex->Name = "LTC_NFTex";
+	
+	LTCTexLoader::CreateLTCResources(md3dDevice.Get(), mCommandList.Get(), LTCTexLoader::TexToUse::Inv_M, LTC_InvMTex->Resource, LTC_InvMTex->UploadHeap);
+	LTCTexLoader::CreateLTCResources(md3dDevice.Get(), mCommandList.Get(), LTCTexLoader::TexToUse::NF, LTC_NFTex->Resource, LTC_NFTex->UploadHeap);
+
+	mTextures[LTC_InvMTex->Name] = std::move(LTC_InvMTex);
+	mTextures[LTC_NFTex->Name] = std::move(LTC_NFTex);
+}
+
+void EngineApp::BuildAreaLight()
+{
+	//AreaLight areaLight = mMainPassCB.AreaLight;
+	DirectX::XMFLOAT3 normal = { 0.0f, 0.0f, -1.0f };
+
+	std::array<Vertex, 4> vertices =
+	{
+		Vertex({ XMFLOAT3(-1.0f, +1.0f, 0.0f), normal }),
+		Vertex({ XMFLOAT3(+1.0f, +1.0f, 0.0f), normal }),
+		Vertex({ XMFLOAT3(-1.0f, -1.0f, 0.0f), normal }),
+		Vertex({ XMFLOAT3(+1.0f, -1.0f, 0.0f), normal }),
+	};
+
+	std::array<std::uint16_t, 6> indices =
+	{
+		0, 1, 2,
+		2, 1, 3
+	};
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "areaLightGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["areaLight"] = submesh;
+
+	mGeometries[geo->Name] = std::move(geo);
+
+}
 
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> EngineApp::GetStaticSamplers()
 {

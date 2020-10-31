@@ -39,7 +39,7 @@
     <ClCompile Include="..\..\Common\d3dUtil.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\DDSTextureLoader.cpp">
+    <ClCompile Include="LTCTexLoader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,7 +65,10 @@
     <ClInclude Include="..\..\Common\d3dUtil.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Common\DDSTextureLoader.h">
+    <ClInclude Include="LTCTexLoader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AreaLight.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -79,6 +82,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\StandardUtils.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\LTC.hlsli">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

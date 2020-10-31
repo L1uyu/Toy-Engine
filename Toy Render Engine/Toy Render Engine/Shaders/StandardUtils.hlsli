@@ -27,6 +27,15 @@ struct Light
     float SpotPower;    // spot light only
 };
 
+struct AreaLight
+{
+    float3 position;
+    float width;
+    float3 dir;
+    float height;
+    float3 horizontal;
+    float lightColor;
+};
 
 
 struct Material
@@ -37,7 +46,7 @@ struct Material
     float4 Emission;
 };
 
-
+Texture2D gLTCTex[2] : register(t0);
 
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);
@@ -78,8 +87,8 @@ cbuffer cbPass : register(b2)
     float gDeltaTime;
     float4 gAmbientLight;
 
-
-    Light gLights[16];
+    AreaLight gAreaLight;
+    Light gLights[15];
  
 }
 
