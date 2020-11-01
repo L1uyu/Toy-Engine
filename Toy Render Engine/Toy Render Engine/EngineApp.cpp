@@ -727,6 +727,7 @@ void EngineApp::BuildShadersAndInputLayout()
 	//mShaders["opaquePS"] = d3dUtil::CompileShader(L"Shaders\\color.hlsl", nullptr, "PS", "ps_5_1");
 	mShaders["standardVS"] = d3dUtil::LoadBinary(L"Shaders/StandardVertex.cso");
 	mShaders["opaquePS"] = d3dUtil::LoadBinary(L"Shaders/StandardPixel.cso");
+	//mShaders["opaquePS"] = d3dUtil::LoadBinary(L"Shaders/AreaLightPixel.cso");
 
 
 

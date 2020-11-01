@@ -34,7 +34,8 @@ struct AreaLight
     float3 dir;
     float height;
     float3 horizontal;
-    float lightColor;
+    float lumin;
+    float4 color;
 };
 
 
