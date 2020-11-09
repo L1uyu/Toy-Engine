@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{8d370e9a-9216-4a2f-8acc-b055f74b3e0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{7a81729b-759e-4050-bfbc-721744a7184c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Public\AreaLight.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\D3DApp.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\FrameResource.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\GeometryGenerator.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Public\LTCTexLoader.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\d3dUtil.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\d3dx12.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\DDSTextureLoader.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\GameTimer.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\MathHelper.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+    <ClInclude Include="Private\UploadBuffer.h">
+      <Filter>Private</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Dx12Renderer.cpp" />
+    <ClCompile Include="Private\D3DApp.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\d3dUtil.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\DDSTextureLoader.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\FrameResource.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\GameTimer.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\GeometryGenerator.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\LTCTexLoader.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Private\MathHelper.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

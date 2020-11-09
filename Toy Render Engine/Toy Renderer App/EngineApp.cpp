@@ -1,11 +1,12 @@
-#include "D3DApp.h"
-#include "GeometryGenerator.h"
-#include "FrameResource.h"
-#include "AreaLight.h"
-#include "LTCTexLoader.h"
+#include "../Dx12Renderer/Public/D3DApp.h"
+#include "../Dx12Renderer/Public/GeometryGenerator.h"
+#include "../Dx12Renderer/Public/FrameResource.h"
+#include "../Dx12Renderer/Public/AreaLight.h"
+#include "../Dx12Renderer/Public/LTCTexLoader.h"
 #include <iostream>
 #include <fstream>
 
+#pragma comment(lib,"Dx12Renderer.lib")
 
 
 using Microsoft::WRL::ComPtr;

@@ -1,6 +1,6 @@
 #pragma once
-#include "d3dUtil.h"
-#include "GameTimer.h"
+#include "../Private/d3dUtil.h"
+#include "../Private/GameTimer.h"
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")

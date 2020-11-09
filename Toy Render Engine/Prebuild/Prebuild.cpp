@@ -1,9 +1,14 @@
 ﻿#include <iostream>
 #include <fstream>
-#include "GeometryGenerator.h"
+#include "../Dx12Renderer/Private/MathHelper.h"
+#include "../Dx12Renderer/Public/GeometryGenerator.h"
 #include <DirectXCollision.h>
+
+#pragma comment(lib,"Dx12Renderer.lib")
 typedef unsigned int        UINT;
 
+
+using namespace DirectX;
 struct SubmeshGeometry
 {
 	UINT IndexCount = 0;
@@ -20,6 +25,7 @@ struct Vertex
     DirectX::XMFLOAT3 Pos;
     //DirectX::XMFLOAT4 Color;
     DirectX::XMFLOAT3 Normal;
+	DirectX::XMFLOAT2 TexC;
 };
 
 
@@ -109,7 +115,7 @@ void CreateFileFloat(std::string filePath, float* ltc)
 void BuildGeometry()
 {
 	GeometryGenerator geoGen;
-	GeometryGenerator::MeshData box = geoGen.CreateBox(1.5f, 0.5f, 1.5f, 3);
+	GeometryGenerator::MeshData box = geoGen.CreateBox(1.0f, 1.0f, 1.0f, 3);
 	GeometryGenerator::MeshData grid = geoGen.CreateGrid(20.0f, 30.0f, 60, 40);
 	GeometryGenerator::MeshData sphere = geoGen.CreateSphere(0.5f, 20, 20);
 	GeometryGenerator::MeshData cylinder = geoGen.CreateCylinder(0.5f, 0.3f, 3.0f, 20, 20);
@@ -169,24 +175,28 @@ void BuildGeometry()
 	{
 		vertices[k].Pos = box.Vertices[i].Position;
 		vertices[k].Normal = box.Vertices[i].Normal;
+		vertices[k].TexC = box.Vertices[i].TexC;
 	}
 
 	for (size_t i = 0; i < grid.Vertices.size(); ++i, ++k)
 	{
 		vertices[k].Pos = grid.Vertices[i].Position;
 		vertices[k].Normal = grid.Vertices[i].Normal;
+		vertices[k].TexC = grid.Vertices[i].TexC;
 	}
 
 	for (size_t i = 0; i < sphere.Vertices.size(); ++i, ++k)
 	{
 		vertices[k].Pos = sphere.Vertices[i].Position;
 		vertices[k].Normal = sphere.Vertices[i].Normal;
+		vertices[k].TexC = sphere.Vertices[i].TexC;
 	}
 
 	for (size_t i = 0; i < cylinder.Vertices.size(); ++i, ++k)
 	{
 		vertices[k].Pos = cylinder.Vertices[i].Position;
 		vertices[k].Normal = cylinder.Vertices[i].Normal;
+		vertices[k].TexC = cylinder.Vertices[i].TexC;
 	}
 
 	std::vector<std::uint16_t> indices;
@@ -235,7 +245,7 @@ void BuildGeometry()
 
 void BuildSkull()
 {
-	std::ifstream fin("Models/skull.txt");
+	/*std::ifstream fin("Models/skull.txt");
 
 	if (!fin)
 	{
@@ -268,7 +278,80 @@ void BuildSkull()
 		fin >> indices[i * 3 + 0] >> indices[i * 3 + 1] >> indices[i * 3 + 2];
 	}
 
+	fin.close();*/
+
+	std::ifstream fin("Models/skull.txt");
+
+	if (!fin)
+	{
+		std::cout << "skull找不到文件";
+		return;
+	}
+
+	UINT vcount = 0;
+	UINT tcount = 0;
+	std::string ignore;
+
+	fin >> ignore >> vcount;
+	fin >> ignore >> tcount;
+	fin >> ignore >> ignore >> ignore >> ignore;
+
+	XMFLOAT3 vMinf3(+MathHelper::Infinity, +MathHelper::Infinity, +MathHelper::Infinity);
+	XMFLOAT3 vMaxf3(-MathHelper::Infinity, -MathHelper::Infinity, -MathHelper::Infinity);
+
+	XMVECTOR vMin = XMLoadFloat3(&vMinf3);
+	XMVECTOR vMax = XMLoadFloat3(&vMaxf3);
+
+	std::vector<Vertex> vertices(vcount);
+	for (UINT i = 0; i < vcount; ++i)
+	{
+		fin >> vertices[i].Pos.x >> vertices[i].Pos.y >> vertices[i].Pos.z;
+		fin >> vertices[i].Normal.x >> vertices[i].Normal.y >> vertices[i].Normal.z;
+
+		XMVECTOR P = XMLoadFloat3(&vertices[i].Pos);
+
+		// Project point onto unit sphere and generate spherical texture coordinates.
+		XMFLOAT3 spherePos;
+		XMStoreFloat3(&spherePos, XMVector3Normalize(P));
+
+		float theta = atan2f(spherePos.z, spherePos.x);
+
+		// Put in [0, 2pi].
+		if (theta < 0.0f)
+			theta += XM_2PI;
+
+		float phi = acosf(spherePos.y);
+
+		float u = theta / (2.0f * XM_PI);
+		float v = phi / XM_PI;
+
+		vertices[i].TexC = { u, v };
+
+		vMin = XMVectorMin(vMin, P);
+		vMax = XMVectorMax(vMax, P);
+	}
+
+	BoundingBox bounds;
+	XMStoreFloat3(&bounds.Center, 0.5f * (vMin + vMax));
+	XMStoreFloat3(&bounds.Extents, 0.5f * (vMax - vMin));
+
+	fin >> ignore;
+	fin >> ignore;
+	fin >> ignore;
+
+	std::vector<std::uint16_t> indices(3 * tcount);
+	for (UINT i = 0; i < tcount; ++i)
+	{
+		fin >> indices[i * 3 + 0] >> indices[i * 3 + 1] >> indices[i * 3 + 2];
+	}
+
 	fin.close();
+
+	//
+	// Pack the indices of all the meshes into one index buffer.
+	//
+
+	
 
 	//
 	// Pack the indices of all the meshes into one index buffer.
@@ -301,7 +384,7 @@ int main()
 	BuildSkull();
 	std::cout << "已生成Skull\n";
 
-	float* g_ltc_1 = new float[4 * 64 * 64]{
+	/*float* g_ltc_1 = new float[4 * 64 * 64]{
 				1, 0.f, 0.f, 2e-05f,
 				1, 0.f, 0.f, 0.000503905f,
 				1, 0.f, 0.f, 0.00201562f,
@@ -8501,7 +8584,7 @@ int main()
 	std::cout << "开始生成LTC\n";
 	CreateFileFloat("g_ltc_1", g_ltc_1);
 	CreateFileFloat("g_ltc_2", g_ltc_2);
-	std::cout << "已生成LTC\n";
+	std::cout << "已生成LTC\n";*/
 
 	return 0;
 }

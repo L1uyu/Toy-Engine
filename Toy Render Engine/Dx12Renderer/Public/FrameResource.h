@@ -1,8 +1,8 @@
 #pragma once
 
-#include "d3dUtil.h"
-#include "MathHelper.h"
-#include "UploadBuffer.h"
+#include "../Private/d3dUtil.h"
+#include "../Private/MathHelper.h"
+#include "../Private/UploadBuffer.h"
 #include "AreaLight.h"
 
 struct ObjectConstants
@@ -44,7 +44,7 @@ struct Vertex
     DirectX::XMFLOAT3 Pos;
     //DirectX::XMFLOAT4 Color;
     DirectX::XMFLOAT3 Normal;
-    //DirectX::XMFLOAT2 TexC;
+    DirectX::XMFLOAT2 TexC;
 };
 
 

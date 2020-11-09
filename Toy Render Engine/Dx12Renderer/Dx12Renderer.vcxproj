@@ -21,32 +21,32 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{bb892c8a-5212-40f5-927d-527c841a6bd0}</ProjectGuid>
-    <RootNamespace>ToyRenderEngine</RootNamespace>
+    <ProjectGuid>{7e6eacde-89ce-4f48-a136-20d7e7e91c6a}</ProjectGuid>
+    <RootNamespace>Dx12Renderer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -78,26 +78,30 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\..\Temp\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\Temp\Mid\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
-    <LibraryPath>D:\LiaoZihan\Temp\DX12App_x64_Debug;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)..\..\Temp\Lib\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Temp\Lib\Mid\</IntDir>
+    <IncludePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Public;D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(IncludePath)</IncludePath>
+    <SourcePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\Common;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)..\..\Release\$(ProjectName)_$(Platform)_$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\Release\Mid\$(ProjectName)_$(Platform)_$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Lib\Mid\</IntDir>
+    <IncludePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Public;D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(IncludePath)</IncludePath>
+    <SourcePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
@@ -107,11 +111,14 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -121,23 +128,16 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy "$(ProjectDir)Shaders\*.cso" "$(OutDir)Shaders\" /y</Command>
-    </PostBuildEvent>
-    <FxCompile>
-      <ShaderModel>5.1</ShaderModel>
-      <ObjectFileOutput>Shaders\%(Filename).cso</ObjectFileOutput>
-    </FxCompile>
-    <PreBuildEvent>
-      <Command>if exist $(OutDir)Shaders ( ) else ( mkdir "$(OutDir)Shaders" )</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -145,74 +145,42 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy "$(ProjectDir)Shaders\" "$(OutDir)Shaders\" /y
-del "$(OutDir)$(ProjectName).iobj"
-del "$(OutDir)$(ProjectName).ipdb"
-del "$(OutDir)$(ProjectName).pdb"</Command>
-    </PostBuildEvent>
-    <FxCompile>
-      <ShaderModel>5.1</ShaderModel>
-      <ObjectFileOutput>Shaders\%(Filename).cso</ObjectFileOutput>
-    </FxCompile>
-    <PreBuildEvent>
-      <Command>if exist $(OutDir)Shaders ( ) else ( md "$(OutDir)Shaders" )</Command>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Common\d3dUtil.cpp" />
-    <ClCompile Include="..\..\Common\GeometryGenerator.cpp" />
-    <ClCompile Include="..\..\Common\MathHelper.cpp" />
-    <ClCompile Include="D3DApp.cpp" />
-    <ClCompile Include="FrameResource.cpp" />
-    <ClCompile Include="EngineApp.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
-    <ClCompile Include="LTCTexLoader.cpp" />
+    <ClInclude Include="Private\d3dUtil.h" />
+    <ClInclude Include="Private\d3dx12.h" />
+    <ClInclude Include="Private\DDSTextureLoader.h" />
+    <ClInclude Include="Private\GameTimer.h" />
+    <ClInclude Include="Private\MathHelper.h" />
+    <ClInclude Include="Private\UploadBuffer.h" />
+    <ClInclude Include="Public\AreaLight.h" />
+    <ClInclude Include="Public\D3DApp.h" />
+    <ClInclude Include="Public\FrameResource.h" />
+    <ClInclude Include="Public\GeometryGenerator.h" />
+    <ClInclude Include="Public\LTCTexLoader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Common\d3dUtil.h" />
-    <ClInclude Include="..\..\Common\GeometryGenerator.h" />
-    <ClInclude Include="..\..\Common\MathHelper.h" />
-    <ClInclude Include="..\..\Common\UploadBuffer.h" />
-    <ClInclude Include="AreaLight.h" />
-    <ClInclude Include="D3DApp.h" />
-    <ClInclude Include="FrameResource.h" />
-    <ClInclude Include="GameTimer.h" />
-    <ClInclude Include="LTCTexLoader.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\AreaLightPixel.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\StandardPixel.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\StandardVertex.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Shaders\LTC.hlsli" />
-    <None Include="Shaders\StandardUtils.hlsli" />
+    <ClCompile Include="Dx12Renderer.cpp" />
+    <ClCompile Include="Private\D3DApp.cpp" />
+    <ClCompile Include="Private\d3dUtil.cpp" />
+    <ClCompile Include="Private\DDSTextureLoader.cpp" />
+    <ClCompile Include="Private\FrameResource.cpp" />
+    <ClCompile Include="Private\GameTimer.cpp" />
+    <ClCompile Include="Private\GeometryGenerator.cpp" />
+    <ClCompile Include="Private\LTCTexLoader.cpp" />
+    <ClCompile Include="Private\MathHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

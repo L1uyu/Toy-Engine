@@ -1,5 +1,5 @@
 #pragma once
-#include "d3dUtil.h"
+#include "../Private/d3dUtil.h"
 namespace LTCTexLoader {
 	
 	enum TexToUse {
