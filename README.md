@@ -1,3 +1,23 @@
+# ZWoC 2021 Project List
+
+ZWoc is for Zihan Winter of Code, which is a GSoC-like WoC host by Liao Zihan. This is similar to GSoC, but it is no-paid. Actually, it is a virtual WoC only for Liao Zihan. 
+
+To practice English skill and manage the roadmap of my render engine, I set up the virtual WoC and list To-do projects below. If you are interesting in any one, please contact me. 
+
+Email: realzihan@foxmail.com
+
+## 1. Encapsulate the Dx12 renderer
+
+**Skill:** C++
+
+Toy render engine has an unfinished DirectX12 renderer. That part has presented basic dx12 framework, but need to be encapsulated more efficient. 
+
+
+
+---
+
+
+
 ## Toy Render Engine
 
 这个项目立项之初是想记录下我学习龙书的进度，发挥下GitHub最原始的代码托管功能 :)
