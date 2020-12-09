@@ -18,12 +18,35 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\AreaLight.h" />
+    <ClInclude Include="include\D3DApp.h" />
+    <ClInclude Include="include\d3dUtil.h" />
+    <ClInclude Include="include\d3dx12.h" />
+    <ClInclude Include="include\DDSTextureLoader.h" />
+    <ClInclude Include="include\FrameResource.h" />
+    <ClInclude Include="include\GameTimer.h" />
+    <ClInclude Include="include\GeometryGenerator.h" />
+    <ClInclude Include="include\LTCTexLoader.h" />
+    <ClInclude Include="include\MathHelper.h" />
+    <ClInclude Include="include\UploadBuffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\D3DApp.cpp" />
+    <ClCompile Include="src\d3dUtil.cpp" />
+    <ClCompile Include="src\DDSTextureLoader.cpp" />
+    <ClCompile Include="src\FrameResource.cpp" />
+    <ClCompile Include="src\GameTimer.cpp" />
+    <ClCompile Include="src\GeometryGenerator.cpp" />
+    <ClCompile Include="src\LTCTexLoader.cpp" />
+    <ClCompile Include="src\MathHelper.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{7e6eacde-89ce-4f48-a136-20d7e7e91c6a}</ProjectGuid>
     <RootNamespace>Dx12Renderer</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -42,13 +65,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -80,15 +103,15 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)..\..\Temp\Lib\</OutDir>
     <IntDir>$(SolutionDir)..\..\Temp\Lib\Mid\</IntDir>
-    <IncludePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Public;D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(IncludePath)</IncludePath>
-    <SourcePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)..\..\Lib\</OutDir>
     <IntDir>$(SolutionDir)..\..\Lib\Mid\</IntDir>
-    <IncludePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Public;D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(IncludePath)</IncludePath>
-    <SourcePath>D:\LiaoZihan\Toy-Engine\Toy Render Engine\Dx12Renderer\Private;$(SourcePath)</SourcePath>
+    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <SourcePath>$(ProjectDir)src;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -158,30 +181,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="Private\d3dUtil.h" />
-    <ClInclude Include="Private\d3dx12.h" />
-    <ClInclude Include="Private\DDSTextureLoader.h" />
-    <ClInclude Include="Private\GameTimer.h" />
-    <ClInclude Include="Private\MathHelper.h" />
-    <ClInclude Include="Private\UploadBuffer.h" />
-    <ClInclude Include="Public\AreaLight.h" />
-    <ClInclude Include="Public\D3DApp.h" />
-    <ClInclude Include="Public\FrameResource.h" />
-    <ClInclude Include="Public\GeometryGenerator.h" />
-    <ClInclude Include="Public\LTCTexLoader.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Dx12Renderer.cpp" />
-    <ClCompile Include="Private\D3DApp.cpp" />
-    <ClCompile Include="Private\d3dUtil.cpp" />
-    <ClCompile Include="Private\DDSTextureLoader.cpp" />
-    <ClCompile Include="Private\FrameResource.cpp" />
-    <ClCompile Include="Private\GameTimer.cpp" />
-    <ClCompile Include="Private\GeometryGenerator.cpp" />
-    <ClCompile Include="Private\LTCTexLoader.cpp" />
-    <ClCompile Include="Private\MathHelper.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

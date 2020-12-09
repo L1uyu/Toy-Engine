@@ -1,73 +1,72 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Public">
-      <UniqueIdentifier>{8d370e9a-9216-4a2f-8acc-b055f74b3e0b}</UniqueIdentifier>
+    <Filter Include="include">
+      <UniqueIdentifier>{e641dc76-5fb3-4a68-8402-3c0435c05d2f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private">
-      <UniqueIdentifier>{7a81729b-759e-4050-bfbc-721744a7184c}</UniqueIdentifier>
+    <Filter Include="src">
+      <UniqueIdentifier>{9fe058b5-adc0-462e-8c79-9051120bbadd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Public\AreaLight.h">
-      <Filter>Public</Filter>
+    <ClInclude Include="include\AreaLight.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Public\D3DApp.h">
-      <Filter>Public</Filter>
+    <ClInclude Include="include\D3DApp.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Public\FrameResource.h">
-      <Filter>Public</Filter>
+    <ClInclude Include="include\d3dUtil.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Public\GeometryGenerator.h">
-      <Filter>Public</Filter>
+    <ClInclude Include="include\d3dx12.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Public\LTCTexLoader.h">
-      <Filter>Public</Filter>
+    <ClInclude Include="include\DDSTextureLoader.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Private\d3dUtil.h">
-      <Filter>Private</Filter>
+    <ClInclude Include="include\FrameResource.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Private\d3dx12.h">
-      <Filter>Private</Filter>
+    <ClInclude Include="include\GameTimer.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Private\DDSTextureLoader.h">
-      <Filter>Private</Filter>
+    <ClInclude Include="include\GeometryGenerator.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Private\GameTimer.h">
-      <Filter>Private</Filter>
+    <ClInclude Include="include\LTCTexLoader.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Private\MathHelper.h">
-      <Filter>Private</Filter>
+    <ClInclude Include="include\MathHelper.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Private\UploadBuffer.h">
-      <Filter>Private</Filter>
+    <ClInclude Include="include\UploadBuffer.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Dx12Renderer.cpp" />
-    <ClCompile Include="Private\D3DApp.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\D3DApp.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\d3dUtil.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\d3dUtil.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\DDSTextureLoader.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\DDSTextureLoader.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\FrameResource.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\FrameResource.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\GameTimer.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\GameTimer.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\GeometryGenerator.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\GeometryGenerator.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\LTCTexLoader.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\LTCTexLoader.cpp">
+      <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Private\MathHelper.cpp">
-      <Filter>Private</Filter>
+    <ClCompile Include="src\MathHelper.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -26,7 +26,8 @@ Toy render engine has an unfinished DirectX12 renderer. That part has presented 
 一步一步来吧👍
 
 #### 编译
-使用Windows SDK和VS2019。
+使用Windows SDK和~~VS2019.~~ 在最近一次的VS2019更新后，龙书部分的代码就无法通过编译了。最终也不确定哪里出错了，只好换回VS2017（未更新）。
+
 #### 完成情况
 - [x] 基础框架 DX12初始化
 - [x] 绘制基础的不透明几何体
@@ -36,6 +37,8 @@ Toy render engine has an unfinished DirectX12 renderer. That part has presented 
 - [ ] 透明 混合
 - [ ] 待续
 #### 重构
+又进行了一些处理，开始进一步重构龙书的框架了。先是对D3D部分做了封装。不过龙书原本的框架并不适合写引擎，所以现在我的代码改成了一片混乱。现在从混乱的应用层中生成了DLL，可以为之后的编辑器使用。**混乱到生出了惰意，建议跟随龙书学习时不要和我一样胡思乱想。**
+
 第一次进行代码重构，修改了龙书的框架。将D3D部分和相关的类写进库，由App部分调用库。虽然依旧不合理。日后慢慢阅读其他项目的架构再进行重构。
 
 ##### 闲话
